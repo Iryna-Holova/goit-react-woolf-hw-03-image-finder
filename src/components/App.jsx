@@ -14,6 +14,7 @@ class App extends Component {
     PENDING: 'PENDING',
     FAILED: 'FAILED',
     SUCCEEDED: 'SUCCEEDED',
+    EMPTY: 'EMPTY',
   };
 
   PER_PAGE = 12;
@@ -42,10 +43,22 @@ class App extends Component {
     const { q, page } = this.state;
     this.setState({ status: this.STATUS.PENDING });
     try {
-      const data = await getImages({ q, page, per_page: this.PER_PAGE });
+      const { hits, totalHits } = await getImages({
+        q,
+        page,
+        per_page: this.PER_PAGE,
+      });
+
+      if (!hits.length) {
+        this.setState({
+          status: this.STATUS.EMPTY,
+        });
+        return;
+      }
+
       this.setState(prevState => ({
-        images: [...prevState.images, ...data.hits],
-        isLoadMore: page < Math.ceil(data.totalHits / this.PER_PAGE),
+        images: [...prevState.images, ...hits],
+        isLoadMore: page < Math.ceil(totalHits / this.PER_PAGE),
         status: this.STATUS.SUCCEEDED,
       }));
     } catch (error) {
@@ -61,7 +74,7 @@ class App extends Component {
     this.setState({ isModalOpen: false, modalData: null });
   };
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(_, prevState) {
     const { q: prevQuery, page: prevPage } = prevState;
     const { q, page } = this.state;
     if (prevQuery !== q || prevPage !== page) {
@@ -94,9 +107,7 @@ class App extends Component {
 
         {status === this.STATUS.PENDING && images.length === 0 && <Loader />}
 
-        {status === this.STATUS.SUCCEEDED && this.state.images.length === 0 && (
-          <Message>Nothing found...</Message>
-        )}
+        {status === this.STATUS.EMPTY && <Message>Nothing found...</Message>}
 
         {status === this.STATUS.FAILED && (
           <Message>Something went wrong...</Message>
