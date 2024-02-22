@@ -28,18 +28,13 @@ class App extends Component {
     modalData: null,
   };
 
-  handleSubmit = evt => {
-    evt.preventDefault();
-    const q = evt.target.elements.query.value.trim();
-    if (q === '') {
-      return alert('Please enter search query');
-    }
+  handleQueryChange = q => {
     this.setState({ images: [], q, page: 1, isLoadMore: false });
   };
 
-  handleLoadMore = async () => {
+  handleLoadMore = () => {
     this.setState(prevState => ({
-      page: (prevState.page += 1),
+      page: prevState.page + 1,
     }));
   };
 
@@ -59,12 +54,10 @@ class App extends Component {
   }
 
   handleModalOpen = data => {
-    document.querySelector('html').classList.add('no-scroll');
     this.setState({ isModalOpen: true, modalData: data });
   };
 
   handleModalClose = () => {
-    document.querySelector('html').classList.remove('no-scroll');
     this.setState({ isModalOpen: false, modalData: null });
   };
 
@@ -81,7 +74,7 @@ class App extends Component {
 
     return (
       <div className={css.app}>
-        <SearchBar onSubmit={this.handleSubmit} />
+        <SearchBar onFormSubmit={this.handleQueryChange} />
         <ImageGallery onModalOpen={this.handleModalOpen} images={images} />
 
         {isLoadMore && (

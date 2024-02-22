@@ -1,10 +1,19 @@
 import React from 'react';
 import css from './SearchBar.module.css';
 
-const SearchBar = ({ onSubmit }) => {
+const SearchBar = ({ onFormSubmit }) => {
+  const handleSubmit = evt => {
+    evt.preventDefault();
+    const query = evt.target.elements.query.value.trim();
+    if (query === '') {
+      return alert('Please enter search query');
+    }
+    onFormSubmit(query);
+  };
+
   return (
     <header className={css.searchbar}>
-      <form className={css.form} onSubmit={onSubmit}>
+      <form className={css.form} onSubmit={handleSubmit}>
         <button type="submit" className={css.button}>
           <span className={css.button_label}>Search</span>
         </button>
