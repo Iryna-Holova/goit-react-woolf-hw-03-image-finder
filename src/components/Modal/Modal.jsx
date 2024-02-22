@@ -3,10 +3,12 @@ import css from './Modal.module.css';
 
 export class Modal extends Component {
   componentDidMount() {
+    document.querySelector('html').classList.add('no-scroll');
     document.addEventListener('keydown', this.handleEscapeClose);
   }
 
   componentWillUnmount() {
+    document.querySelector('html').classList.remove('no-scroll');
     document.removeEventListener('keydown', this.handleEscapeClose);
   }
 
