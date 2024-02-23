@@ -1,10 +1,10 @@
 import { Component } from 'react';
+import getImages from 'api/pixabay';
+import css from './App.module.css';
 import SearchBar from './SearchBar/SearchBar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
 import Modal from './Modal/Modal';
-import css from './App.module.css';
-import getImages from 'api/pixabay';
 import Loader from './Loader/Loader';
 import Message from './Message/Message';
 
@@ -12,9 +12,9 @@ class App extends Component {
   STATUS = {
     IDLE: 'IDLE',
     PENDING: 'PENDING',
-    FAILED: 'FAILED',
     SUCCEEDED: 'SUCCEEDED',
     EMPTY: 'EMPTY',
+    FAILED: 'FAILED',
   };
 
   PER_PAGE = 12;
@@ -25,9 +25,16 @@ class App extends Component {
     page: 1,
     status: this.STATUS.IDLE,
     isLoadMore: false,
-    isModalOpen: false,
     modalData: null,
   };
+
+  componentDidUpdate(_, prevState) {
+    const { q: prevQuery, page: prevPage } = prevState;
+    const { q, page } = this.state;
+    if (prevQuery !== q || prevPage !== page) {
+      this.loadImages();
+    }
+  }
 
   handleQueryChange = q => {
     this.setState({ images: [], q, page: 1, isLoadMore: false });
@@ -66,24 +73,16 @@ class App extends Component {
     }
   }
 
-  handleModalOpen = data => {
-    this.setState({ isModalOpen: true, modalData: data });
+  handleModalOpen = modalData => {
+    this.setState({ modalData });
   };
 
   handleModalClose = () => {
-    this.setState({ isModalOpen: false, modalData: null });
+    this.setState({ modalData: null });
   };
 
-  componentDidUpdate(_, prevState) {
-    const { q: prevQuery, page: prevPage } = prevState;
-    const { q, page } = this.state;
-    if (prevQuery !== q || prevPage !== page) {
-      this.loadImages();
-    }
-  }
-
   render() {
-    const { images, status, isLoadMore, isModalOpen, modalData } = this.state;
+    const { status, images, isLoadMore, modalData } = this.state;
 
     return (
       <div className={css.app}>
@@ -97,7 +96,7 @@ class App extends Component {
           />
         )}
 
-        {isModalOpen && (
+        {modalData && (
           <Modal onModalClose={this.handleModalClose} {...modalData} />
         )}
 
@@ -110,7 +109,7 @@ class App extends Component {
         {status === this.STATUS.EMPTY && <Message>Nothing found...</Message>}
 
         {status === this.STATUS.FAILED && (
-          <Message>Something went wrong...</Message>
+          <Message warning>Something went wrong...</Message>
         )}
       </div>
     );
